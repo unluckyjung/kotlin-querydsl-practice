@@ -49,8 +49,8 @@ dependencies {
 }
 
 // querydsl setting (QClass 생성 위치 설정)
-sourceSets["main"].withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
-    kotlin.srcDir("$buildDir/generated/source/kapt/main/test")
+kotlin.sourceSets.main {
+    kotlin.srcDir("$buildDir/generated/source/kapt/main")
 }
 
 tasks.withType<KotlinCompile> {
