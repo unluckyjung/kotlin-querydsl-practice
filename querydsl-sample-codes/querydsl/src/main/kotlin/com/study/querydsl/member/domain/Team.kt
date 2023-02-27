@@ -17,7 +17,6 @@ class Team(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
 
-
 ) {
     override fun toString(): String {
         return "Team(name='$name', id=$id)"
