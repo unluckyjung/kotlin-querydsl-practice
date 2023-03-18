@@ -1,5 +1,6 @@
 package com.study.querydsl.member.domain
 
+import com.querydsl.core.annotations.QueryProjection
 import javax.persistence.*
 
 @Table(name = "member")
@@ -33,3 +34,10 @@ class Member(
         return "Member(name=$name, age=$age, id=$id)"
     }
 }
+
+
+data class MemberInfo @QueryProjection constructor(
+    val company: String,
+    val name: String,
+    val age: Int,
+)
