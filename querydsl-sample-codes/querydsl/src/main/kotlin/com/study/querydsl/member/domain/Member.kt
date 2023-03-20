@@ -41,3 +41,29 @@ data class MemberInfo @QueryProjection constructor(
     val name: String,
     val age: Int,
 )
+
+
+// noArgusConstructor 를 위해서 기본값
+// setter 를 위해서 var
+data class MemberDtoWithNoArgusAndSetter(
+    var name: String = "",
+    var age: Int = 30,
+)
+
+// noArgusConstructor 를 위해서 기본값
+data class MemberDtoWithNoArgus(
+    val name: String = "",
+    val age: Int = 30,
+)
+
+data class MemberDtoOtherFieldName(
+    val userName: String = "",
+    val age: Int = 30,
+)
+
+
+data class MemberDtoByConstructor(
+    val name: String,
+    val age: Int,
+)
+
