@@ -153,4 +153,26 @@ class ProjectionTest(
             result.age shouldBe 31
         }
     }
+
+    @DisplayName("[추천] QueryPojection 어노테이션을 이용하면, 잘못된 위치에 다른 타입의 값을 넣는경우 컴파일 타임에 예외가 잡힌다.")
+    @Test
+    fun byAnnotation() {
+        memberRepository.save(
+            Member(
+                name = "yoonsung",
+                age = 31,
+            )
+        )
+
+        val result = queryFactory.select(
+            QMemberDtoByAnnotation(
+                QMember.member.name,
+                QMember.member.age,
+            )
+        ).from(QMember.member).fetchOne()!!
+
+        result.name shouldBe "yoonsung"
+        result.age shouldBe 31
+    }
+
 }

@@ -67,3 +67,11 @@ data class MemberDtoByConstructor(
     val age: Int,
 )
 
+// QueryDSL 에 의존적인 Dto가 된다.
+// 생성자 위에 달아주어야 하기 때문에, 코틀린의 경우 constructor 를 명시해주어야한다.
+data class MemberDtoByAnnotation @QueryProjection constructor(
+    val name: String,
+    val age: Int,
+)
+
+
