@@ -1,8 +1,14 @@
 package com.study.querydsl.member.domain
 
 import com.querydsl.core.annotations.QueryProjection
+import org.hibernate.annotations.SQLDelete
+import org.hibernate.annotations.SQLDeleteAll
+import org.hibernate.annotations.Where
+import java.time.ZonedDateTime
 import javax.persistence.*
 
+//@Where(clause = "deleted_at is null")
+@SQLDelete(sql = "UPDATE member SET deleted_at = NOW() WHERE member_id = ?")
 @Table(name = "member")
 @Entity
 class Member(
@@ -28,6 +34,14 @@ class Member(
     fun changeTeam(team: Team) {
         this.team = team
         team.members.add(this)
+    }
+
+    @Column(name = "deleted_at")
+    var deletedAt: ZonedDateTime? = null
+        protected set
+
+    fun delete() {
+        deletedAt = ZonedDateTime.now()
     }
 
     override fun toString(): String {
