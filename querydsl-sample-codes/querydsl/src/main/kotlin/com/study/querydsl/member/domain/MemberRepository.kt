@@ -1,10 +1,15 @@
 package com.study.querydsl.member.domain
 
 import com.querydsl.jpa.impl.JPAQueryFactory
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
+import org.springframework.data.querydsl.QPageRequest
+import org.springframework.data.querydsl.QSort
 import org.springframework.data.querydsl.QuerydslPredicateExecutor
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
 interface MemberRepository : JpaRepository<Member, Long>
 
@@ -14,6 +19,7 @@ interface MemberPredicateRepository : JpaRepository<Member, Long>, QuerydslPredi
 class MemberDao : QuerydslRepositorySupport(Member::class.java) {
 //     private val queryFactory = JPAQueryFactory(entityManager) // 해당 queryFactory 는 정상적으로 작동안함.
 
+    @Transactional(readOnly = true)
     fun findMembersByName(name: String): List<Member> {
         return from(QMember.member)
             .select(QMember.member)
@@ -21,6 +27,7 @@ class MemberDao : QuerydslRepositorySupport(Member::class.java) {
             .fetch().toList()
     }
 
+    @Transactional
     fun changeNameLtAge(toChangeName: String, age: Int): Long {
         // 함수에서 만들어줘야함. 영속성 컨텍스트별로 엔티티 매니저가 관리되기 때문에 이슈가 되는것으로 보임.
         // 왜냐하면 윗단에서 만드는 엔티티 매니저는 다른 영속성 컨텍스트에서 호출할때는, 해당 영속성 컨텍스트 범위 밖에서 만들어진것이라 문제인것으로 추측
@@ -38,5 +45,20 @@ class MemberDao : QuerydslRepositorySupport(Member::class.java) {
         entityManager!!.clear()
 
         return resultCount
+    }
+
+    @Transactional(readOnly = true)
+    fun getMemberWithPaging(age: Int, pageable: Pageable): List<Member> {
+        val query = from(QMember.member)
+            .where(
+                QMember.member.age.eq(age),
+            ).select(QMember.member)
+        return querydsl!!.applyPagination(pageable, query).fetch()
+    }
+
+    @Transactional(readOnly = true)
+    fun getMemberWithPagingAndSort(pageable: Pageable): List<Member> {
+        val query = from(QMember.member).select(QMember.member)
+        return querydsl!!.applyPagination(pageable, query).fetch()
     }
 }
