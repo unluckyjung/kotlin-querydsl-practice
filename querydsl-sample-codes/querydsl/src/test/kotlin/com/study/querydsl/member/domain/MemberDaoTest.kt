@@ -91,4 +91,34 @@ class MemberDaoTest(
         result2[1].age shouldBe 20
         result2[2].age shouldBe 30
     }
+
+    @DisplayName("applyPagination")
+    @Test
+    fun getMemberWithPagingDataTest() {
+        memberRepository.save(Member(name = "unluckyjung", age = 40))
+        memberRepository.save(Member(name = "goodall", age = 10))
+        memberRepository.save(Member(name = "yooonsung", age = 30))
+        memberRepository.save(Member(name = "jys", age = 20))
+        memberRepository.save(Member(name = "fortune", age = 50))
+
+        val result1 = memberDao.getMembersByPagingDataBasic(PageRequest.of(0, 3))
+        result1.size shouldBe 3
+        result1.totalElements shouldBe 5
+        result1.totalPages shouldBe 2
+
+        val content1 = result1.content
+        content1[0].age shouldBe 40
+        content1[1].age shouldBe 10
+        content1[2].age shouldBe 30
+
+        val result2 = memberRepository.findAll(PageRequest.of(0, 3, Sort.by("age").ascending()))
+        result2.size shouldBe 3
+        result2.totalElements shouldBe 5
+        result2.totalPages shouldBe 2
+
+        val content2 = result2.content
+        content2[0].age shouldBe 10 // 정렬 되어짐.
+        content2[1].age shouldBe 20
+        content2[2].age shouldBe 30
+    }
 }

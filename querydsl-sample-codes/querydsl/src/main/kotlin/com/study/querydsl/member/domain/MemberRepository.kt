@@ -1,23 +1,24 @@
 package com.study.querydsl.member.domain
 
 import com.querydsl.jpa.impl.JPAQueryFactory
-import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
-import org.springframework.data.querydsl.QPageRequest
-import org.springframework.data.querydsl.QSort
 import org.springframework.data.querydsl.QuerydslPredicateExecutor
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 
-interface MemberRepository : JpaRepository<Member, Long>
+interface MemberRepository : JpaRepository<Member, Long>{
+    override fun findAll(pageable: Pageable): Page<Member>
+}
 
 interface MemberPredicateRepository : JpaRepository<Member, Long>, QuerydslPredicateExecutor<Member>
 
 @Repository
 class MemberDao : QuerydslRepositorySupport(Member::class.java) {
-//     private val queryFactory = JPAQueryFactory(entityManager) // 해당 queryFactory 는 정상적으로 작동안함.
+//    private val queryFactory = JPAQueryFactory(entityManager) // 해당 queryFactory 는 정상적으로 작동안함.
 
     @Transactional(readOnly = true)
     fun findMembersByName(name: String): List<Member> {
@@ -57,8 +58,34 @@ class MemberDao : QuerydslRepositorySupport(Member::class.java) {
     }
 
     @Transactional(readOnly = true)
+    fun getMembersByPagingDataBasic(pageable: Pageable): Page<Member> {
+        // pagagle 에 있는 sort 를 사용하기가 매우 애매히진다.
+        // https://uchupura.tistory.com/7 와 같은 방법을 통해서 직접 만들어줘야 함.
+
+        return from(QMember.member)
+            .select(QMember.member)
+            .offset(pageable.offset)
+            .limit(pageable.pageSize.toLong())
+            .fetchResults().let {
+                PageImpl(
+                    it.results,
+                    pageable,
+
+                    // 여기서 쿼리가 한번 또 나간다.
+                    /*
+                    select count(member0_.member_id) as col_0_0_
+                            from
+                            member member0_
+                     */
+                    it.total
+                )
+            }
+    }
+
+    @Transactional(readOnly = true)
     fun getMemberWithPagingAndSort(pageable: Pageable): List<Member> {
         val query = from(QMember.member).select(QMember.member)
+
         return querydsl!!.applyPagination(pageable, query).fetch()
     }
 }
