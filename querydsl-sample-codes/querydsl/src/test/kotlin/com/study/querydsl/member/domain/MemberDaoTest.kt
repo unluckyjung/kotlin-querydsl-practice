@@ -121,4 +121,44 @@ class MemberDaoTest(
         content2[1].age shouldBe 20
         content2[2].age shouldBe 30
     }
+
+    @DisplayName("일반 페이징은 page request size 가 전체 개수보다 큰경우에도, countQuery 가 추가적으로 나간다.")
+    @Test
+    fun getMemberWithPagingDataTestImprovTest1() {
+        val dataSize = 5
+        repeat(dataSize){
+            memberRepository.save(Member(name = "unluckyjung", age = 30))
+        }
+
+        val result1 = memberDao.getMembersByPagingDataBasic(PageRequest.of(0, 7))
+
+        // 아래 쿼리 발생
+/*
+        select
+        count(member0_.member_id) as col_0_0_
+        from
+        member member0_
+        */
+
+        result1.size shouldBe 7
+        result1.content.size shouldBe 5
+        result1.totalElements shouldBe 5
+        result1.totalPages shouldBe 1
+    }
+
+    @DisplayName("PageableExecutionUtils 를 사용하면, 추가적인 쿼리가 불필요한 경우에는 countQuery 가 나가지 않는다.")
+    @Test
+    fun getMemberWithPagingDataTestImprovTest2() {
+        val dataSize = 5
+        repeat(dataSize){
+            memberRepository.save(Member(name = "unluckyjung", age = 30))
+        }
+
+        val result1 = memberDao.getMembersByPagingDataBasicWithOutCountQuery(PageRequest.of(0, 7))
+
+        result1.size shouldBe 7
+        result1.content.size shouldBe 5
+        result1.totalElements shouldBe 5
+        result1.totalPages shouldBe 1
+    }
 }

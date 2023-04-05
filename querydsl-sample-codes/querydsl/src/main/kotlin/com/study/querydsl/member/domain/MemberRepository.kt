@@ -7,10 +7,11 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import org.springframework.data.querydsl.QuerydslPredicateExecutor
+import org.springframework.data.support.PageableExecutionUtils
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 
-interface MemberRepository : JpaRepository<Member, Long>{
+interface MemberRepository : JpaRepository<Member, Long> {
     override fun findAll(pageable: Pageable): Page<Member>
 }
 
@@ -66,20 +67,33 @@ class MemberDao : QuerydslRepositorySupport(Member::class.java) {
             .select(QMember.member)
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
+            // 여기서 쿼리가 한번 또 나간다. (total 을 얻기위해)
+            /*
+            select count(member0_.member_id) as col_0_0_
+                    from
+                    member member0_
+             */
             .fetchResults().let {
                 PageImpl(
                     it.results,
                     pageable,
-
-                    // 여기서 쿼리가 한번 또 나간다.
-                    /*
-                    select count(member0_.member_id) as col_0_0_
-                            from
-                            member member0_
-                     */
                     it.total
                 )
             }
+    }
+
+    @Transactional(readOnly = true)
+    fun getMembersByPagingDataBasicWithOutCountQuery(pageable: Pageable): Page<Member> {
+        val query = from(QMember.member)
+            .select(QMember.member)
+            .offset(pageable.offset)
+            .limit(pageable.pageSize.toLong())
+
+        val content = query.fetch()
+
+        // PageableExecutionUtils 를 이용하면, 굳이 totalCount 를 조회하지 않아도 되는 경우에는 추가 쿼리가 나가지 않는다.
+        // 데이터의 끝지점에 도달하면, count 쿼리를 보내지 않고 내부적인 로직으로 totalElement 를 보고 totalCount 를 리턴한다.
+        return PageableExecutionUtils.getPage(content, pageable, query::fetchCount)
     }
 
     @Transactional(readOnly = true)
