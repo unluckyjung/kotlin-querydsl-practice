@@ -92,6 +92,28 @@ class MemberDaoTest(
         result2[2].age shouldBe 30
     }
 
+    @DisplayName("paging QSort 와, orderBy가 동시에 사용되는경우, QSort 가 적용된다.")
+    @Test
+    fun getMemberWithPagingTest3() {
+        memberRepository.save(Member(name = "unluckyjung", age = 40))
+        memberRepository.save(Member(name = "goodall", age = 10))
+        memberRepository.save(Member(name = "yooonsung", age = 30))
+        memberRepository.save(Member(name = "jys", age = 20))
+        memberRepository.save(Member(name = "fortune", age = 50))
+
+        // age 내림차순 정렬
+        val queryDslSort = QSort(QMember.member.age.desc())
+
+        // .orderBy(QMember.member.age.asc()) 호출
+        val result2 = memberDao.getMemberWithPagingAndOrderByIdASC(PageRequest.of(0, 3, queryDslSort))
+
+        result2.size shouldBe 3
+
+        result2[0].age shouldBe 10
+        result2[1].age shouldBe 20
+        result2[2].age shouldBe 30
+    }
+
     @DisplayName("applyPagination")
     @Test
     fun getMemberWithPagingDataTest() {

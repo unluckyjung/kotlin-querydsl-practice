@@ -60,7 +60,7 @@ class MemberDao : QuerydslRepositorySupport(Member::class.java) {
 
     @Transactional(readOnly = true)
     fun getMembersByPagingDataBasic(pageable: Pageable): Page<Member> {
-        // pagagle 에 있는 sort 를 사용하기가 매우 애매히진다.
+        // pageable 에 있는 sort 를 사용하기가 매우 애매히진다.
         // https://uchupura.tistory.com/7 와 같은 방법을 통해서 직접 만들어줘야 함.
 
         return from(QMember.member)
@@ -99,6 +99,15 @@ class MemberDao : QuerydslRepositorySupport(Member::class.java) {
     @Transactional(readOnly = true)
     fun getMemberWithPagingAndSort(pageable: Pageable): List<Member> {
         val query = from(QMember.member).select(QMember.member)
+            .orderBy(QMember.member.age.asc())
+
+        return querydsl!!.applyPagination(pageable, query).fetch()
+    }
+
+    @Transactional(readOnly = true)
+    fun getMemberWithPagingAndOrderByIdASC(pageable: Pageable): List<Member> {
+        val query = from(QMember.member).select(QMember.member)
+            .orderBy(QMember.member.age.asc())
 
         return querydsl!!.applyPagination(pageable, query).fetch()
     }
