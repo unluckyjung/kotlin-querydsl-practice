@@ -148,7 +148,7 @@ class MemberDaoTest(
     @Test
     fun getMemberWithPagingDataTestImprovTest1() {
         val dataSize = 5
-        repeat(dataSize){
+        repeat(dataSize) {
             memberRepository.save(Member(name = "unluckyjung", age = 30))
         }
 
@@ -172,7 +172,7 @@ class MemberDaoTest(
     @Test
     fun getMemberWithPagingDataTestImprovTest2() {
         val dataSize = 5
-        repeat(dataSize){
+        repeat(dataSize) {
             memberRepository.save(Member(name = "unluckyjung", age = 30))
         }
 
@@ -182,5 +182,44 @@ class MemberDaoTest(
         result1.content.size shouldBe 5
         result1.totalElements shouldBe 5
         result1.totalPages shouldBe 1
+    }
+
+    @DisplayName("커서 없이 조회하면 max(요청개수, 데이터개수) 만큼 조회된다.")
+    @Test
+    fun getMembersByCursorPagingTest1() {
+        val dataSize = 5
+        repeat(dataSize) {
+            memberRepository.save(Member(name = "unluckyjung", age = it))
+        }
+
+        val requestSize = 3
+        val members1 = memberDao.getMembersByCursorPaging(cursor = null, size = requestSize)
+        members1.size shouldBe 3
+        members1[0].age shouldBe 0
+        members1[1].age shouldBe 1
+        members1[2].age shouldBe 2
+
+
+        val overRequestSize = 7
+        memberDao.getMembersByCursorPaging(cursor = null, size = overRequestSize).size shouldBe dataSize
+    }
+
+    @DisplayName("id 에 기반한 커서기반으로 조회시, 해당 id 이후의 member 들만 조회된다.")
+    @Test
+    fun getMembersByCursorPagingTest2() {
+        memberRepository.save(Member(name = "unluckyjung", age = 1))
+        memberRepository.save(Member(name = "unluckyjung", age = 2))
+        memberRepository.save(Member(name = "unluckyjung", age = 3))
+        val cursorMember = memberRepository.save(Member(name = "unluckyjung", age = 4))
+        memberRepository.save(Member(name = "unluckyjung", age = 5))
+        memberRepository.save(Member(name = "unluckyjung", age = 6))
+        memberRepository.save(Member(name = "unluckyjung", age = 7))
+
+        val requestSize = 2
+        val result = memberDao.getMembersByCursorPaging(cursor = cursorMember.id, size = requestSize)
+
+        result.size shouldBe 2
+        result[0].age shouldBe 5
+        result[1].age shouldBe 6
     }
 }

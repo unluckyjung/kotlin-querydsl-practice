@@ -1,11 +1,14 @@
 package com.study.querydsl.member.domain
 
+import com.querydsl.core.BooleanBuilder
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
+import org.springframework.data.querydsl.QSort
 import org.springframework.data.querydsl.QuerydslPredicateExecutor
 import org.springframework.data.support.PageableExecutionUtils
 import org.springframework.stereotype.Repository
@@ -80,6 +83,22 @@ class MemberDao : QuerydslRepositorySupport(Member::class.java) {
                     it.total
                 )
             }
+    }
+
+    @Transactional(readOnly = true)
+    fun getMembersByCursorPaging(cursor: Long? = null, size: Int): List<Member> {
+
+        val pageRequest = PageRequest.of(0, size, QSort(QMember.member.id.asc()))
+        val predicate = BooleanBuilder().apply {
+            cursor?.let {
+                this.and(QMember.member.id.gt(cursor))
+            }
+        }
+
+        val query = from(QMember.member)
+            .where(predicate)
+
+        return querydsl!!.applyPagination(pageRequest, query).fetch()
     }
 
     @Transactional(readOnly = true)
