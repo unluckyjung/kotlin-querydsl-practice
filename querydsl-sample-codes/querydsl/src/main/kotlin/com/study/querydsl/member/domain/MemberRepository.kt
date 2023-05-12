@@ -25,6 +25,14 @@ class MemberDao : QuerydslRepositorySupport(Member::class.java) {
 //    private val queryFactory = JPAQueryFactory(entityManager) // 해당 queryFactory 는 정상적으로 작동안함.
 
     @Transactional(readOnly = true)
+    fun findMemberById(memberId: Long): Member? {
+        return from(QMember.member)
+            .select(QMember.member)
+            .where(QMember.member.id.eq(memberId))
+            .fetchOne()
+    }
+
+    @Transactional(readOnly = true)
     fun findMembersByName(name: String): List<Member> {
         return from(QMember.member)
             .select(QMember.member)

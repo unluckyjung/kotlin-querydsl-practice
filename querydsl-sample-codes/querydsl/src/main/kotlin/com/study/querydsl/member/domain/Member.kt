@@ -7,8 +7,8 @@ import org.hibernate.annotations.Where
 import java.time.ZonedDateTime
 import javax.persistence.*
 
-//@Where(clause = "deleted_at is null")
 @SQLDelete(sql = "UPDATE member SET deleted_at = NOW() WHERE member_id = ?")
+@Where(clause = "deleted_at is null")
 @Table(name = "member")
 @Entity
 class Member(
@@ -19,6 +19,8 @@ class Member(
     val age: Int = 0,
 
     team: Team? = null,
+
+    deletedAt: ZonedDateTime? = null,
 
     @Column(name = "member_id")
     @Id
@@ -37,11 +39,11 @@ class Member(
     }
 
     @Column(name = "deleted_at")
-    var deletedAt: ZonedDateTime? = null
+    var deletedAt: ZonedDateTime? = deletedAt
         protected set
 
-    fun delete() {
-        deletedAt = ZonedDateTime.now()
+    fun delete(deletedAt: ZonedDateTime = ZonedDateTime.now()) {
+        this.deletedAt = deletedAt
     }
 
     override fun toString(): String {
