@@ -1,5 +1,7 @@
 package com.study.querydsl.member.domain
 
+import com.querydsl.core.group.GroupBy.groupBy
+import com.querydsl.core.group.GroupBy.list
 import com.study.querydsl.member.domain.QMember.member
 import com.study.querydsl.member.domain.QTeam.team
 import org.springframework.data.jpa.repository.JpaRepository
@@ -32,5 +34,13 @@ class TeamDao : QuerydslRepositorySupport(Team::class.java) {
                 )
             )
             .fetch()
+    }
+
+    @Transactional(readOnly = true)
+    fun findMembersWithTeam(teamId: Long): Map<Team, List<Member>>? {
+        return from(team)
+            .join(member).on(member.team.eq(team))
+            .where(team.id.eq(teamId))
+            .transform(groupBy(team).`as`(list(member)))
     }
 }
