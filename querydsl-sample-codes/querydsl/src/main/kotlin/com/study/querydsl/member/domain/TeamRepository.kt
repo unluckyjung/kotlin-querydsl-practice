@@ -37,6 +37,24 @@ class TeamDao : QuerydslRepositorySupport(Team::class.java) {
     }
 
     @Transactional(readOnly = true)
+    fun findMembersByTeam(teamId: Long): List<Member> {
+        return from(team)
+            .join(member).on(member.team.eq(team))
+            .where(team.id.eq(teamId))
+            .select(member)
+            .fetch()
+    }
+
+    @Transactional(readOnly = true)
+    fun findMembersByTeam2(teamId: Long): List<Member> {
+        return from(team)
+            .join(member).on(member.team.eq(team), member.deletedAt.isNull)
+            .where(team.id.eq(teamId))
+            .select(member)
+            .fetch()
+    }
+
+    @Transactional(readOnly = true)
     fun findMembersWithTeam(teamId: Long): Map<Team, List<Member>>? {
         return from(team)
             .join(member).on(member.team.eq(team))
