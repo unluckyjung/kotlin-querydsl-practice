@@ -175,4 +175,45 @@ class ProjectionTest(
         result.age shouldBe 31
     }
 
+    @DisplayName("group by 결과를 count 집계연산으로 처리하는경우, 프로젝션 필드 타입은 Long 으로 해주어야한다.")
+    @Test
+    fun projectionCountQueryTest() {
+        memberRepository.save(
+            Member(
+                name = "yoonsung",
+                age = 31,
+            )
+        )
+
+        memberRepository.save(
+            Member(
+                name = "yoonsung",
+                age = 30,
+            )
+        )
+
+        memberRepository.save(
+            Member(
+                name = "unluckyjung",
+                age = 30,
+            )
+        )
+
+        val result = queryFactory.select(
+            QNameCountDto(
+                QMember.member.name,
+                QMember.member.count(),
+            )
+        ).from(QMember.member).groupBy(
+            QMember.member.name
+        ).fetch()
+
+        result.size shouldBe 2
+
+        result[0].name shouldBe "unluckyjung"
+        result[0].count shouldBe 1
+
+        result[1].name shouldBe "yoonsung"
+        result[1].count shouldBe 2
+    }
 }

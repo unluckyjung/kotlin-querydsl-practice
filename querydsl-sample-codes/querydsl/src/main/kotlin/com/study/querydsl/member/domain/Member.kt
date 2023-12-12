@@ -90,4 +90,9 @@ data class MemberDtoByAnnotation @QueryProjection constructor(
     val age: Int,
 )
 
+data class NameCountDto @QueryProjection constructor(
+    val name: String,
+    val count: Long,
+)
+
 
