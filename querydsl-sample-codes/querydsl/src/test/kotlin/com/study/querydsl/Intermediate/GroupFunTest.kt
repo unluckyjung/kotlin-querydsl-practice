@@ -13,7 +13,7 @@ class GroupFunTest(
     private val memberRepository: MemberRepository,
     private val teamDao: TeamDao,
 ) {
-    @DisplayName("group 을 사용하면, map 형태로 반환받을 수 있다.")
+    @DisplayName("transform 을 사용하면, map 형태로 반환받을 수 있다.")
     @Test
     fun groupTest() {
         val team = teamRepository.save(
