@@ -2,14 +2,16 @@ package com.study.querydsl.basic
 
 import com.querydsl.jpa.impl.JPAQueryFactory
 import com.study.querydsl.common.IntegrationTest
-import com.study.querydsl.member.domain.Member
-import com.study.querydsl.member.domain.MemberRepository
+import com.study.querydsl.member.domain.*
 import com.study.querydsl.member.domain.QMember.member
 import com.study.querydsl.member.domain.QTeam.team
-import com.study.querydsl.member.domain.Team
-import com.study.querydsl.member.domain.TeamRepository
+import com.study.querydsl.trade.domain.QTrade.*
+import com.study.querydsl.trade.domain.QTraderNames
+import com.study.querydsl.trade.domain.Trade
+import com.study.querydsl.trade.domain.TradeRepository
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import javax.persistence.EntityManager
 import javax.persistence.EntityManagerFactory
@@ -20,6 +22,7 @@ class JoinTest(
     private val entityManagerFactory: EntityManagerFactory,
     private val memberRepository: MemberRepository,
     private val teamRepository: TeamRepository,
+    private val tradeRepository: TradeRepository,
 ) {
     private val queryFactory = JPAQueryFactory(entityManager)
 
@@ -113,5 +116,29 @@ class JoinTest(
             .fetchFirst()!!
 
         entityManagerFactory.persistenceUnitUtil.isLoaded(fetchJoinMember.team) shouldBe true
+    }
+
+    @DisplayName("한개의 엔티티에 대해 다중 join 이 필요하다면 별칭을 주어야한다. ")
+    @Test
+    fun sameTableJoinTest() {
+        val goodall = memberRepository.save(Member(name = "goodall"))
+        val yoonsung = memberRepository.save(Member(name = "yoonsung"))
+        tradeRepository.save(Trade(buyerId = goodall.id, sellerId = yoonsung.id))
+
+        val buyer = QMember("buyer")
+        val seller = QMember("seller")
+
+        val result = queryFactory.from(trade)
+            .innerJoin(buyer).on(trade.buyerId.eq(buyer.id))
+            .innerJoin(seller).on(trade.sellerId.eq(seller.id))
+            .select(
+                QTraderNames(
+                    buyer.name,
+                    seller.name
+                )
+            ).fetchOne()
+
+        result!!.buyerName shouldBe "goodall"
+        result.sellerName shouldBe "yoonsung"
     }
 }
